@@ -7,6 +7,7 @@ contract Twitter {
     address author;
     string content;
     uint timestmap;
+    bool isDeleted;
   }
 
   Tweet[] private _tweets;
@@ -16,6 +17,11 @@ contract Twitter {
       _tweets[_id].author == msg.sender,
       'You are not the author of this tweet'
     );
+    _;
+  }
+
+  modifier isNotDeleted(uint _id) {
+    require(!_tweets[_id].isDeleted, 'The tweet is deleted');
     _;
   }
 
@@ -33,7 +39,8 @@ contract Twitter {
       _tweets.length,
       msg.sender,
       _content,
-      block.timestamp
+      block.timestamp,
+      false
     );
 
     _tweets.push(newTweet);
@@ -77,7 +84,23 @@ contract Twitter {
    * A function to get all the tweets
    */
   function getTweets() external view returns (Tweet[] memory) {
-    return _tweets;
+    uint nonDeletedTweetsCount = 0;
+    for (uint i = 0; i < _tweets.length; i++) {
+      if (!_tweets[i].isDeleted) {
+        nonDeletedTweetsCount++;
+      }
+    }
+    Tweet[] memory nonDeletedTweets = new Tweet[](nonDeletedTweetsCount);
+
+    uint j = 0;
+
+    for (uint i = 0; i < _tweets.length; i++) {
+      if (!_tweets[i].isDeleted) {
+        nonDeletedTweets[j] = _tweets[i];
+        j++;
+      }
+    }
+    return nonDeletedTweets;
   }
 
   /*
@@ -86,7 +109,11 @@ contract Twitter {
   function editTweet(
     uint _id,
     string memory _newContent
-  ) external isAuthor(_id) {
+  ) external isAuthor(_id) isNotDeleted(_id) {
     _tweets[_id].content = _newContent;
+  }
+
+  function deleteTweet(uint _id) external isAuthor(_id) isNotDeleted(_id) {
+    _tweets[_id].isDeleted = true;
   }
 }

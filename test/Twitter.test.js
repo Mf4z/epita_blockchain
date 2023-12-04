@@ -44,5 +44,14 @@ describe.only('Twitter', () => {
     ).to.be.revertedWith('You are not the author of this tweet');
   });
 
+  it('should not be able to edit a deleted tweet', async () => {
+    await twitter.createTweet('Hello, world!');
+    await twitter.deleteTweet(0);
+
+    await expect(twitter.editTweet(0, 'Goodbye, world!')).to.be.revertedWith(
+      'The tweet is deleted',
+    );
+  });
+
   // it('should be erased', () => {});
 });
