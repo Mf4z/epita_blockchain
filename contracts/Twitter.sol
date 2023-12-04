@@ -1,7 +1,11 @@
 // SPDX-License-Identifier: SEE LICENSE IN LICENSE
 pragma solidity >=0.8.0 <0.9.0;
 
-contract Twitter {
+import { Ownable } from '@openzeppelin/contracts/access/Ownable.sol';
+
+contract Twitter is Ownable {
+  // address payable public owner;
+
   struct Tweet {
     uint id;
     address author;
@@ -11,6 +15,16 @@ contract Twitter {
   }
 
   Tweet[] private _tweets;
+
+  // constructor() {
+  //   owner = payable(msg.sender);
+  // }
+
+  function withdraw() external onlyOwner {
+    address payable _owner = payable(owner());
+    // require(msg.msg.sender == owner, 'You are not the owner');
+    _owner.transfer(address(this).balance);
+  }
 
   modifier isAuthor(uint _id) {
     require(
