@@ -83,7 +83,7 @@ contract Twitter {
   /*
    * A function to edit a tweet
    */
-  function editTweets(
+  function editTweet(
     uint _id,
     string memory _newContent
   ) external isAuthor(_id) {
