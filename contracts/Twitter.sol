@@ -11,10 +11,82 @@ contract Twitter {
 
   Tweet[] private _tweets;
 
-  mapping(address => uint[]) private _tweetsByAuthor;
+  modifier isAuthor(uint _id) {
+    require(
+      _tweets[_id].author == msg.sender,
+      'You are not the author of this tweet'
+    );
+    _;
+  }
 
+  /**
+   * This is the non-optimised way to get tweets by author
+   */
+  // mapping(address => Tweet[]) public _tweetsByAuthor;
+
+  /**
+   * A function that allows users to create a new tweet
+   * @param _content The content of the tweet
+   */
   function createTweet(string memory _content) external {
-    _tweets.push(Tweet(_tweets.length, msg.sender, _content, block.timestamp));
-    _tweetsByAuthor[msg.sender].push(_tweets.length);
+    Tweet memory newTweet = Tweet(
+      _tweets.length,
+      msg.sender,
+      _content,
+      block.timestamp
+    );
+
+    _tweets.push(newTweet);
+
+    /**
+     * This is the non-optimised way to get tweets by author
+     */
+    // _tweetsByAuthor[msg.sender].push(newTweet);
+  }
+
+  /**
+   * A function to get all the tweets from a given author
+   * @param _author The address of the author whom we want to get the tweets
+   */
+  function getTweetByAuthor(
+    address _author
+  ) external view returns (Tweet[] memory) {
+    Tweet[] memory tweetsByAuthor = new Tweet[](_tweets.length);
+    uint j = 0;
+
+    for (uint i = 0; i < _tweets.length; i++) {
+      if (_tweets[i].author != _author) {
+        tweetsByAuthor[j] = _tweets[i];
+        j++;
+      }
+    }
+
+    return tweetsByAuthor;
+  }
+
+  /**
+   * This is the non-optimised way to get tweets by author
+   */
+  // function getTweetByAuthor2(
+  //   address _author
+  // ) external view returns (Tweet[] memory) {
+  //   return _tweetsByAuthor[_author];
+  // }
+
+  /*
+   * A function to get all the tweets
+   */
+  function getTweets() external view returns (Tweet[] memory) {
+    return _tweets;
+  }
+
+  /*
+   * A function to edit a tweet
+   */
+  function editTweets(
+    uint _id,
+    string memory _newContent
+  ) external isAuthor(_id) {
+    _tweets[_id].content = _newContent;
   }
 }
